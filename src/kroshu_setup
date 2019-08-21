@@ -1,0 +1,159 @@
+#!/bin/bash
+
+# Copyright (c) 2019, Zoltán Rési
+# All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# You may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
+
+function add_travis_config() {
+	rm -f .travis.yml
+	echo "# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
+# For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
+
+language: cpp # optional, just removes the language badge
+compiler:
+  - gcc
+os:
+  - linux
+branches:
+  only:
+  - master
+
+# include the following block if the C/C++ build artifacts should get cached by Travis,
+# CCACHE_DIR needs to get set as well to actually fill the cache
+#cache:
+#  directories:
+#    - $HOME/.ccache
+
+git:
+  quiet: true # optional, silences the cloning of the target repository
+
+# configure the build environment(s)
+# https://github.com/ros-industrial/industrial_ci/blob/master/doc/index.rst#variables-you-can-configure
+env:
+  global: # global settings for all jobs
+    - ROS_REPO=ros
+    - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
+    - DOCKER_RUN_OPTS='-e SONAR_TOKEN=$SONAR_TOKEN'
+    - SONAR_SCANNER='true'
+    - TEST_COVERAGE='true'
+  matrix: # each line is a job
+ #   - ROS_DISTRO='kinetic'
+    - ROS_DISTRO='melodic'
+
+addons:
+  sonarcloud:
+    organization: $organization
+
+notifications:
+  email: false
+
+# clone and run industrial_ci
+install:
+  - git clone --quiet --depth 1 https://github.com/kroshu/industrial_ci.git .industrial_ci
+script:
+- .industrial_ci/travis.sh" >> .travis.yml
+	chown $SUDO_USER .travis.yml
+	
+}
+
+function add_sonar_properties() {
+	rm -f sonar-project.properties
+	echo "sonar.organization=$organization
+sonar.projectName=$package_name
+sonar.projectKey=${organization}_${package_name}
+
+sonar.projectVersion=1.0
+
+sonar.host.url=https://sonarcloud.io
+
+# change working directory to keep write protection of source directories
+sonar.working.directory=/root/sonar/working_directory
+
+# output folder of build wrapper for C/C++
+sonar.cfamily.build-wrapper-output=/root/sonar/bw_output
+
+# gcov code coverage files
+sonar.cfamily.gcov.reportsPath=/root/catkin_ws/build/$package_name/test_coverage 
+
+# Path is relative to the sonar-project.properties file (package root directory). Defaults to .
+sonar.sources=./src
+sonar.tests=./test
+ 
+# Encoding of the source code. Default is default system encoding
+sonar.sourceEncoding=UTF-8" >> sonar-project.properties
+		chown $SUDO_USER sonar-project.properties
+
+}
+
+
+install_coverage_cmake_module() {
+	if ! [ -f "/usr/lib/cmake/CodeCoverage/CodeCoverage.cmake" ]; then
+		echo "Downloading CodeCoverage.cmake module from github.com/kroshu/kroshu-tools"
+		curl "https://github.com/kroshu/kroshu-tools/blob/master/cmake/CodeCoverage.cmake" --create-dirs -o /usr/lib/cmake/CodeCoverage/CodeCoverage.cmake
+		chmod +rx -R /usr/lib/cmake/CodeCoverage
+	fi
+}
+
+setup_for_coverage() {
+	echo "
+
+###################
+## Test coverage ##
+###################
+
+# Add option for generation of test coverage reports
+OPTION(TEST_COVERAGE \"Generate test coverage reports upon testing.\" OFF)
+
+if(TEST_COVERAGE)
+	# Set build type to debug to avoid compiler optimization when checking coverage
+	set(CMAKE_BUILD_TYPE Debug)
+	# Include convenience functions. Make sure project has the CMakeModules/CodeCoverage.cmake file
+	list(APPEND CMAKE_MODULE_PATH \"/usr/lib/cmake/CodeCoverage\")
+	include(CodeCoverage)
+	# Append compiler flags to gcc for generating coverage notes
+	APPEND_COVERAGE_COMPILER_FLAGS()
+	# By default coverage output is placed in ${CMAKE_BINARY_DIR}/test_coverage
+	SETUP_COVERAGE_OUTPUT_DIR()
+endif()
+
+if(TEST_COVERAGE)
+	# Define a coverage target with some libs and executables to check
+	#add_coverage(NAME coverage
+	#			 TARGETS mypkg_lib mypkg_node)
+endif()" >> CMakeLists.txt
+
+
+
+}
+
+
+if ! [ -f "CMakeLists.txt" ]; then
+	echo "No CMakeLists.txt file detected, init_ci aborted. Did you initialize the catkin package?"
+else
+	organization="kroshu"
+	package_dir="$(pwd)"
+	package_name="${package_dir##*/}"
+
+	add_travis_config
+	add_sonar_properties
+	install_coverage_cmake_module
+	setup_for_coverage
+fi
+
+
+
+
+
