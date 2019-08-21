@@ -46,7 +46,7 @@ env:
   global: # global settings for all jobs
     - ROS_REPO=ros
     - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
-    - DOCKER_RUN_OPTS='-e SONAR_TOKEN=$SONAR_TOKEN'
+    - DOCKER_RUN_OPTS='-e SONAR_TOKEN=\$SONAR_TOKEN'
     - SONAR_SCANNER='true'
     - TEST_COVERAGE='true'
   matrix: # each line is a job
@@ -110,7 +110,7 @@ install_coverage_cmake_module() {
 			curl "https://raw.githubusercontent.com/kroshu/kroshu-tools/master/cmake/CodeCoverage.cmake" --create-dirs -o /usr/lib/cmake/CodeCoverage/CodeCoverage.cmake
 			chmod +rx -R /usr/lib/cmake/CodeCoverage
 		else 
-			echo "CodeCoverage cmake module not installed. Please run script as root in order to properly set up code coverage."
+			echo "CodeCoverage cmake module not installed. Run script as root in order to properly set up code coverage."
 			exit 1
 		fi
 	fi
