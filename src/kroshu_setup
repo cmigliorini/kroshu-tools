@@ -65,8 +65,10 @@ install:
   - git clone --quiet --depth 1 https://github.com/kroshu/industrial_ci.git .industrial_ci
 script:
 - .industrial_ci/travis.sh" >> .travis.yml
-	chown $SUDO_USER .travis.yml
-	
+
+	if [ "$EUID" -eq 0 ]; then
+		chown $SUDO_USER .travis.yml
+	fi
 }
 
 function add_sonar_properties() {
@@ -94,16 +96,23 @@ sonar.tests=./test
  
 # Encoding of the source code. Default is default system encoding
 sonar.sourceEncoding=UTF-8" >> sonar-project.properties
-		chown $SUDO_USER sonar-project.properties
+		if [ "$EUID" -eq 0 ]; then
+			chown $SUDO_USER sonar-project.properties
+		fi
 
 }
 
 
 install_coverage_cmake_module() {
 	if ! [ -f "/usr/lib/cmake/CodeCoverage/CodeCoverage.cmake" ]; then
-		echo "Downloading CodeCoverage.cmake module from github.com/kroshu/kroshu-tools"
-		curl "https://github.com/kroshu/kroshu-tools/blob/master/cmake/CodeCoverage.cmake" --create-dirs -o /usr/lib/cmake/CodeCoverage/CodeCoverage.cmake
-		chmod +rx -R /usr/lib/cmake/CodeCoverage
+		if [ "$EUID" -eq 0 ]; then
+			echo "Downloading CodeCoverage.cmake module from github.com/kroshu/kroshu-tools"
+			curl "https://raw.githubusercontent.com/kroshu/kroshu-tools/master/cmake/CodeCoverage.cmake" --create-dirs -o /usr/lib/cmake/CodeCoverage/CodeCoverage.cmake
+			chmod +rx -R /usr/lib/cmake/CodeCoverage
+		else 
+			echo "CodeCoverage cmake module not installed. Please run script as root in order to properly set up code coverage."
+			exit 1
+		fi
 	fi
 }
 
@@ -147,9 +156,9 @@ else
 	package_dir="$(pwd)"
 	package_name="${package_dir##*/}"
 
+	install_coverage_cmake_module
 	add_travis_config
 	add_sonar_properties
-	install_coverage_cmake_module
 	setup_for_coverage
 fi
 
