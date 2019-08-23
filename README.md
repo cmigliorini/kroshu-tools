@@ -11,7 +11,7 @@ The easiest way to install Kroshu Tools is to clone this repository and create s
 
 ```sh
 git clone https://github.com/kroshu/kroshu-tools.git
-sudo ln -s /home/user/kroshu-tools/src/kroshu_setup/usr/bin/kroshu_setup /usr/lib/kroshu_setup
+sudo ln -s /home/user/kroshu-tools/src/kroshu_setup/usr/bin/kroshu_setup /usr/bin/kroshu_setup
 ```
 
 ## Instrucions
