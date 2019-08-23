@@ -15,10 +15,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+function prompt_overwrite() {
+	read -r -p "File $1 already exists. Would you like to overwrite it? [Y/n]" input
+	while true; do
+		case $input in
+			[Yy]* ) echo "yes"; break;;
+			[Nn]* ) echo "no"; break;;
+			* ) echo "Please answer Y(es) or N(o).";;
+		esac
+	done
+}
 
 function add_travis_config() {
-	rm -f .travis.yml
+	if [ -f .travis.yml ]; then
+		local overwrite=$(prompt_overwrite ".travis.yml")
+		if [ $overwrite == "yes" ]; then
+			rm -f .travis.yml
+		else
+			echo "Skipped file .travis.yml."
+			return
+		fi
+	fi
 	echo "# This config uses industrial_ci (https://github.com/ros-industrial/industrial_ci.git).
 # For troubleshooting, see readme (https://github.com/ros-industrial/industrial_ci/blob/master/README.rst)
 
@@ -35,7 +52,7 @@ branches:
 # CCACHE_DIR needs to get set as well to actually fill the cache
 #cache:
 #  directories:
-#    - $HOME/.ccache
+#    - \$HOME/.ccache
 
 git:
   quiet: true # optional, silences the cloning of the target repository
@@ -45,13 +62,14 @@ git:
 env:
   global: # global settings for all jobs
     - ROS_REPO=ros
-    - CCACHE_DIR=$HOME/.ccache # enables C/C++ caching in industrial_ci
+    - CCACHE_DIR=\$HOME/.ccache # enables C/C++ caching in industrial_ci
     - DOCKER_RUN_OPTS='-e SONAR_TOKEN=\$SONAR_TOKEN'
     - SONAR_SCANNER='true'
     - TEST_COVERAGE='true'
   matrix: # each line is a job
- #   - ROS_DISTRO='kinetic'
+  #  - ROS_DISTRO='kinetic'
     - ROS_DISTRO='melodic'
+    - ROS_DISTRO='melodic' CLANG_FORMAT_CHECK=file
 
 addons:
   sonarcloud:
@@ -63,16 +81,40 @@ notifications:
 # clone and run industrial_ci
 install:
   - git clone --quiet --depth 1 https://github.com/kroshu/industrial_ci.git .industrial_ci
+  - curl \"https://raw.githubusercontent.com/davetcoleman/roscpp_code_format/master/.clang-format\" -o .clang-format
 script:
 - .industrial_ci/travis.sh" >> .travis.yml
 
 	if [ "$EUID" -eq 0 ]; then
 		chown $SUDO_USER .travis.yml
 	fi
+	echo "Added file .travis.yml."
+}
+
+function add_folders() {
+	if ! [ -d ./src ]; then 
+		mkdir ./src;
+		touch ./src/.gitkeep
+		echo "Added source folder ./src"
+	fi
+	if ! [ -d ./test ]; then 
+		mkdir ./test; 
+		touch ./test/.gitkeep
+		echo "Added test folder ./test"
+	fi
 }
 
 function add_sonar_properties() {
-	rm -f sonar-project.properties
+	if [ -f sonar-project.properties ]; then
+		local overwrite=$(prompt_overwrite "sonar-project.properties")
+		if [ $overwrite == "yes" ]; then
+			rm -f sonar-project.properties
+		else
+			echo "Skipped file sonar-project.properties."
+			return
+		fi
+	fi
+	
 	echo "sonar.organization=$organization
 sonar.projectName=$package_name
 sonar.projectKey=${organization}_${package_name}
@@ -92,22 +134,23 @@ sonar.cfamily.gcov.reportsPath=/root/catkin_ws/build/$package_name/test_coverage
 
 # Path is relative to the sonar-project.properties file (package root directory). Defaults to .
 sonar.sources=./src
-#sonar.tests=./test
+sonar.tests=./test
  
 # Encoding of the source code. Default is default system encoding
 sonar.sourceEncoding=UTF-8" >> sonar-project.properties
-		if [ "$EUID" -eq 0 ]; then
-			chown $SUDO_USER sonar-project.properties
-		fi
 
+	if [ "$EUID" -eq 0 ]; then
+		chown $SUDO_USER sonar-project.properties
+	fi
+	echo "Added file sonar-project.properties."
 }
 
 
 install_coverage_cmake_module() {
 	if ! [ -f "/usr/lib/cmake/CodeCoverage/CodeCoverage.cmake" ]; then
 		if [ "$EUID" -eq 0 ]; then
-			echo "Downloading CodeCoverage.cmake module from github.com/kroshu/kroshu-tools"
-			curl "https://raw.githubusercontent.com/kroshu/kroshu-tools/master/cmake/CodeCoverage.cmake" --create-dirs -o /usr/lib/cmake/CodeCoverage/CodeCoverage.cmake
+			echo "Downloading CodeCoverage.cmake module from github.com/kroshu/kroshu-tools..."
+			curl "https://raw.githubusercontent.com/kroshu/kroshu-tools/master/cmake/CodeCoverage.cmake" -s --create-dirs -o /usr/lib/cmake/CodeCoverage/CodeCoverage.cmake
 			chmod +rx -R /usr/lib/cmake/CodeCoverage
 		else 
 			echo "CodeCoverage cmake module not installed. Run script as root in order to properly set up code coverage."
@@ -134,7 +177,7 @@ if(TEST_COVERAGE)
 	include(CodeCoverage)
 	# Append compiler flags to gcc for generating coverage notes
 	APPEND_COVERAGE_COMPILER_FLAGS()
-	# By default coverage output is placed in ${CMAKE_BINARY_DIR}/test_coverage
+	# By default coverage output is placed in \${CMAKE_BINARY_DIR}/test_coverage
 	SETUP_COVERAGE_OUTPUT_DIR()
 endif()
 
@@ -146,7 +189,7 @@ if(TEST_COVERAGE)
 	#			 TARGETS mypkg_lib mypkg_node)
 endif()" >> CMakeLists.txt
 
-
+	echo "Appended test coverage options to CMakeLists.txt."
 
 }
 
@@ -154,11 +197,16 @@ endif()" >> CMakeLists.txt
 if ! [ -f "CMakeLists.txt" ]; then
 	echo "No CMakeLists.txt file detected, init_ci aborted. Did you initialize the catkin package?"
 else
+if [ $# -ne 0 ]; then
+	organization="$1"
+else
 	organization="kroshu"
+fi
 	package_dir="$(pwd)"
 	package_name="${package_dir##*/}"
 
 	install_coverage_cmake_module
+	add_folders
 	add_travis_config
 	add_sonar_properties
 	setup_for_coverage
