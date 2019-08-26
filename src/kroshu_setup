@@ -172,21 +172,20 @@ OPTION(TEST_COVERAGE \"Generate test coverage reports upon testing.\" OFF)
 if(TEST_COVERAGE)
 	# Set build type to debug to avoid compiler optimization when checking coverage
 	set(CMAKE_BUILD_TYPE Debug)
-	# Include convenience functions. Make sure project has the CMakeModules/CodeCoverage.cmake file
+	# Include coverage report related functions
 	list(APPEND CMAKE_MODULE_PATH \"/usr/lib/cmake/CodeCoverage\")
 	include(CodeCoverage)
 	# Append compiler flags to gcc for generating coverage notes
 	APPEND_COVERAGE_COMPILER_FLAGS()
-	# By default coverage output is placed in \${CMAKE_BINARY_DIR}/test_coverage
-	SETUP_COVERAGE_OUTPUT_DIR()
+	# Set coverage output dir to \${CMAKE_BINARY_DIR}/test_coverage
+	SET_COVERAGE_OUTPUT_DIR()
 endif()
 
 if(TEST_COVERAGE)
 	# Define a coverage target with some libs and executables to check
 	#	NAME 	Name of coverage target. Default: coverage. Only works with default currently.
 	#	TARGETS Library and executable targets for which coverage reports are requested.
-	add_coverage(NAME coverage)
-	#			 TARGETS mypkg_lib mypkg_node)
+	add_coverage_gcov(NAME coverage)
 endif()" >> CMakeLists.txt
 
 	echo "Appended test coverage options to CMakeLists.txt."
@@ -201,6 +200,7 @@ if [ $# -ne 0 ]; then
 	organization="$1"
 else
 	organization="kroshu"
+	echo "No organization key provided. Using default: kroshu."
 fi
 	package_dir="$(pwd)"
 	package_name="${package_dir##*/}"

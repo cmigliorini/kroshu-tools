@@ -41,6 +41,8 @@
 # 2017-06-02, Lars Bilke
 # - Merged with modified version from github.com/ufz/ogs
 #
+# 2019-08-26, Zoltan Resi
+# - Added code coverage using gcov
 #
 # USAGE:
 #
@@ -309,7 +311,7 @@ endfunction() # SETUP_TARGET_FOR_COVERAGE_GCOVR_HTML
 #     NAME coverage                    			# Name of test coverage target
 #     TARGETS example_lib example_exe			# Targets for which coverage reports are requested
 # )
-function(add_coverage)
+function(add_coverage_gcov)
 
     set(options NONE)
     set(oneValueArgs NAME)
@@ -317,22 +319,28 @@ function(add_coverage)
     cmake_parse_arguments(Coverage "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
 	add_custom_target(${Coverage_NAME})
+	
+	if(NOT GCOV_OUTPUT_DIR)
+		set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage} PARENT_SCOPE)
+    	file(MAKE_DIRECTORY ${GCOV_OUTPUT_DIR})
+   		message(STATUS "Creating output directory for gcov: ${GCOV_OUTPUT_DIR}")
+	endif() 
 
 	foreach(Coverage_TARGET ${Coverage_TARGETS})
 		# Determine sources of target
 		get_target_property(Coverage_SOURCES ${Coverage_TARGET} SOURCES) 
-		
+
 		# Only add target if source exists
 		if(Coverage_SOURCES)
 			foreach(Coverage_SOURCE ${Coverage_SOURCES})
 				add_custom_command(TARGET ${Coverage_NAME} 
 					# Set coverage report output directory
-					WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/test_coverage
+					WORKING_DIRECTORY ${GCOV_OUTPUT_DIR}
 
 					# Run gcov to generate reports
 					COMMAND ${GCOV_PATH}
-							-b ${CMAKE_SOURCE_DIR}/${SOURCE}
-							-o ${CMAKE_BINARY_DIR}/CMakeFiles/${Coverage_TARGET}.dir/${Coverage_SOURCE}.gcno
+						-b ${CMAKE_SOURCE_DIR}/${SOURCE}
+						-o ${CMAKE_BINARY_DIR}/CMakeFiles/${Coverage_TARGET}.dir/${Coverage_SOURCE}.gcno
 				)
 			endforeach(Coverage_SOURCE)
 		else()
@@ -340,7 +348,7 @@ function(add_coverage)
 		endif()
 	endforeach(Coverage_TARGET)
 
-endfunction() # add_coverage
+endfunction() # add_coverage_gcov
 
 function(APPEND_COVERAGE_COMPILER_FLAGS)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COVERAGE_COMPILER_FLAGS}" PARENT_SCOPE)
@@ -348,7 +356,8 @@ function(APPEND_COVERAGE_COMPILER_FLAGS)
     message(STATUS "Appending code coverage compiler flags: ${COVERAGE_COMPILER_FLAGS}")
 endfunction() # APPEND_COVERAGE_COMPILER_FLAGS
 
-function(SETUP_COVERAGE_OUTPUT_DIR)
-    file(MAKE_DIRECTORY  ${CMAKE_BINARY_DIR}/test_coverage)
-    message(STATUS "Creating output directory for gcov: ${CMAKE_BINARY_DIR}/test_coverage}")
+function(SET_COVERAGE_OUTPUT_DIR)
+	set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage} PARENT_SCOPE)
+    file(MAKE_DIRECTORY ${GCOV_OUTPUT_DIR})
+    message(STATUS "Creating output directory for gcov: ${GCOV_OUTPUT_DIR}")
 endfunction()
