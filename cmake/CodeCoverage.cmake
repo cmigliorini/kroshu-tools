@@ -358,6 +358,6 @@ endfunction() # APPEND_COVERAGE_COMPILER_FLAGS
 
 function(SET_COVERAGE_OUTPUT_DIR)
 	set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage} PARENT_SCOPE)
-    file(MAKE_DIRECTORY ${GCOV_OUTPUT_DIR})
+    file(DIRECTORY DESTINATION ${GCOV_OUTPUT_DIR})
     message(STATUS "Creating output directory for gcov: ${GCOV_OUTPUT_DIR}")
 endfunction()

@@ -65,7 +65,7 @@ env:
     - CCACHE_DIR=\$HOME/.ccache # enables C/C++ caching in industrial_ci
     - DOCKER_RUN_OPTS='-e SONAR_TOKEN=\$SONAR_TOKEN'
     - SONAR_SCANNER='true'
-    - TEST_COVERAGE='true'
+  #  - TEST_COVERAGE='true'
   matrix: # each line is a job
   #  - ROS_DISTRO='kinetic'
     - ROS_DISTRO='melodic'
@@ -185,7 +185,8 @@ if(TEST_COVERAGE)
 	# Define a coverage target with some libs and executables to check
 	#	NAME 	Name of coverage target. Default: coverage. Only works with default currently.
 	#	TARGETS Library and executable targets for which coverage reports are requested.
-	add_coverage_gcov(NAME coverage)
+	# add_coverage_gcov(NAME coverage
+	#					TARGETS mypkg_lib mypkg_node)
 endif()" >> CMakeLists.txt
 
 	echo "Appended test coverage options to CMakeLists.txt."
