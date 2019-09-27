@@ -321,9 +321,8 @@ function(add_coverage_gcov)
 	add_custom_target(${Coverage_NAME})
 	
 	if(NOT GCOV_OUTPUT_DIR)
-		set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage} PARENT_SCOPE)
-    	file(MAKE_DIRECTORY ${GCOV_OUTPUT_DIR})
-   		message(STATUS "Creating output directory for gcov: ${GCOV_OUTPUT_DIR}")
+		set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage PARENT_SCOPE)
+    		file(MAKE_DIRECTORY {CMAKE_BINARY_DIR}/test_coverage)
 	endif() 
 
 	foreach(Coverage_TARGET ${Coverage_TARGETS})
@@ -357,7 +356,7 @@ function(APPEND_COVERAGE_COMPILER_FLAGS)
 endfunction() # APPEND_COVERAGE_COMPILER_FLAGS
 
 function(SET_COVERAGE_OUTPUT_DIR)
-	set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage} PARENT_SCOPE)
-    file(MAKE_DIRECTORY DESTINATION ${GCOV_OUTPUT_DIR})
-    message(STATUS "Creating output directory for gcov: ${GCOV_OUTPUT_DIR}")
+    set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage PARENT_SCOPE)
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_coverage)
+    message(STATUS "Creating output directory for gcov: ${CMAKE_BINARY_DIR}/test_coverage")
 endfunction()
