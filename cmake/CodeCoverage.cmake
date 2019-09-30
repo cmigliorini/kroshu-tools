@@ -335,7 +335,7 @@ function(add_coverage_gcov)
 				add_custom_command(TARGET ${Coverage_NAME} 
 					# Set coverage report output directory
 					WORKING_DIRECTORY ${GCOV_OUTPUT_DIR}
-
+					COMMENT "Coverage reports path: ${GCOV_OUTPUT_DIR}"
 					# Run gcov to generate reports
 					COMMAND ${GCOV_PATH}
 						-b ${CMAKE_SOURCE_DIR}/${SOURCE}
