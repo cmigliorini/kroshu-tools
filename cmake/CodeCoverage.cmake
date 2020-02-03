@@ -322,7 +322,7 @@ function(add_coverage_gcov)
 	
 	if(NOT GCOV_OUTPUT_DIR)
 		set(GCOV_OUTPUT_DIR ${CMAKE_BINARY_DIR}/test_coverage PARENT_SCOPE)
-    		file(MAKE_DIRECTORY {CMAKE_BINARY_DIR}/test_coverage)
+    		file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/test_coverage)
 	endif() 
 
 	foreach(Coverage_TARGET ${Coverage_TARGETS})

@@ -20,7 +20,7 @@ sudo ln -s /home/user/kroshu-tools/src/kroshu_setup/usr/bin/kroshu_setup /usr/bi
 
 The script kroshu_setup initializes your ROS package for continuous integration. It adds neccesary configuration files for Travis CI and SonarQube, installs the TestCoverage cmake module if not already installed and extends your CMakeLists with test coverage options. 
 
-Projects configured with kroshu_setup use a fork of the ros-industrial/industrial\_ci repository. The kroshu fork extends the industrial\_ci by adding SonarQube analisys with test coverage included. In order to use SonarQube, your GitHub organization needs to be set up with SonarCloud or an own SonarQube server and the SONAR\_TOKEN environment variable needs to be set. More information about setting up SonarCloud with GitHub and Travis CI can be found [here](https://sonarcloud.io/documentation/integrations/github/).
+Projects configured with kroshu_setup use a fork of the ros-industrial/industrial\_ci repository. The kroshu fork extends the industrial\_ci by adding SonarQube analysis with test coverage included. In order to use SonarQube, your GitHub organization needs to be set up with SonarCloud or an own SonarQube server, and the SONAR\_TOKEN environment variable needs to be set. More information about setting up SonarCloud with GitHub and Travis CI can be found [here](https://sonarcloud.io/documentation/integrations/github/).
 
 Go inside your ROS package directory and run kroshu_setup with your GitHub organization as input argument. The script makes the following changes to your project:
 
