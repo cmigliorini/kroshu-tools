@@ -14,7 +14,7 @@ git clone https://github.com/kroshu/kroshu-tools.git
 sudo ln -s /home/user/kroshu-tools/src/kroshu_setup/usr/bin/kroshu_setup /usr/bin/kroshu_setup
 ```
 
-## Instrucions
+## Instructions
 
 #### kroshu_setup: 
 

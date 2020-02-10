@@ -94,9 +94,9 @@ setup_analysis() {
 set(SONARQUBE_PACKAGES_FILE \"none\" CACHE STRING \"Path to the file that contains the package source directories for SonarQube.\")
 OPTION(TEST_COVERAGE \"Generate test coverage reports upon testing.\" OFF)
 
-if(NOT ${SONARQUBE_PACKAGES_FILE} MATCHES \"none\")
-  file(APPEND ${SONARQUBE_PACKAGES_FILE} \"${PROJECT_NAME};${PROJECT_SOURCE_DIR}\n\")
-  message(${SONARQUBE_PACKAGES_FILE})
+if(NOT \${SONARQUBE_PACKAGES_FILE} MATCHES \"none\")
+  file(APPEND \${SONARQUBE_PACKAGES_FILE} \"\${PROJECT_NAME};\${PROJECT_SOURCE_DIR}\n\")
+  message(\${SONARQUBE_PACKAGES_FILE})
 endif()
 
 if(TEST_COVERAGE)
@@ -137,5 +137,5 @@ fi
 	install_coverage_cmake_module
 	add_folders
 	add_sonar_properties
-	setup_for_coverage
+	setup_analysis
 fi
