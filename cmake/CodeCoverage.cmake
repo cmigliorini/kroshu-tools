@@ -224,9 +224,12 @@ function(SETUP_TARGET_FOR_COVERAGE_GCOVR_XML)
 
     add_custom_target(${Coverage_NAME}
         # Run tests
+        message("Running gcovr % ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS}")
         ${Coverage_EXECUTABLE} ${Coverage_EXECUTABLE_ARGS}
 
         # Running gcovr
+        message("Running gcovr % ${GCOVR_PATH} --xml -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES} --object-directory=${PROJECT_BINARY_DIR} -o ${Coverage_NAME}.xml")
+        message("Running gcovr % WORKING_DIRECTORY ${PROJECT_BINARY_DIR} DEPENDS ${Coverage_DEPENDENCIES}")
         COMMAND ${GCOVR_PATH} --xml
             -r ${PROJECT_SOURCE_DIR} ${GCOVR_EXCLUDES}
             --object-directory=${PROJECT_BINARY_DIR}
@@ -332,7 +335,11 @@ function(add_coverage_gcov)
 		# Only add target if source exists
 		if(Coverage_SOURCES)
 			message("Coverage reports path: ${GCOV_OUTPUT_DIR}")
+            message(" ... Sources are ${Coverage_SOURCES}")
 			foreach(Coverage_SOURCE ${Coverage_SOURCES})
+                message("    ... adding custom command are ${Coverage_NAME}")
+                message("    ... with command COMMAND ${GCOV_PATH} -b ${CMAKE_SOURCE_DIR}/${SOURCE} -o ${CMAKE_BINARY_DIR}/CMakeFiles/${Coverage_TARGET}.dir/${Coverage_SOURCE}.gcno")
+                message("    ... in working directory ${GCOV_OUTPUT_DIR}")
 				add_custom_command(TARGET ${Coverage_NAME} 
 					# Set coverage report output directory
 					WORKING_DIRECTORY ${GCOV_OUTPUT_DIR}
