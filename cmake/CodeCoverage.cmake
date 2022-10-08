@@ -339,6 +339,7 @@ function(add_coverage_gcov)
 					
 					# Run gcov to generate reports
 					COMMAND ${GCOV_PATH}
+                        -v
 						-b ${CMAKE_SOURCE_DIR}/${SOURCE}
 						-o ${CMAKE_BINARY_DIR}/CMakeFiles/${Coverage_TARGET}.dir/${Coverage_SOURCE}.gcno
 				)
