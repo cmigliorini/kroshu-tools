@@ -332,6 +332,7 @@ function(add_coverage_gcov)
 		# Only add target if source exists
 		if(Coverage_SOURCES)
 			message("Coverage reports path: ${GCOV_OUTPUT_DIR}")
+            message("Coverage sources : ${Coverage_SOURCES}")
 			foreach(Coverage_SOURCE ${Coverage_SOURCES})
 				add_custom_command(TARGET ${Coverage_NAME} 
 					# Set coverage report output directory
